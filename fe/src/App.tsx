@@ -120,13 +120,19 @@ function App() {
     };
 
     return (
-        <div style={{ display: 'flex', width: '100%', height: '100vh' }}>
-            <div style={{ width: '50%', padding: '2rem' }}>
-                <h1>Order Execution Engine</h1>
-                <p style={{ color: '#888' }}>Submit orders and watch them process in real-time</p>
-                <OrderForm onSubmit={handleOrderSubmit} isLoading={isLoading} />
+        <div className="flex w-full h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 overflow-hidden">
+            <div className="w-1/2 p-8 flex flex-col justify-center">
+                <div className="max-w-xl mx-auto w-full">
+                    <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                        Order Execution Engine
+                    </h1>
+                    <p className="text-gray-400 mb-8 text-lg">
+                        Submit orders and watch them process in real-time
+                    </p>
+                    <OrderForm onSubmit={handleOrderSubmit} isLoading={isLoading} />
+                </div>
             </div>
-            <div style={{ width: '50%' }}>
+            <div className="w-1/2 bg-gray-900/50 border-l border-gray-800">
                 <OrderHistory orders={orders} />
             </div>
         </div>
