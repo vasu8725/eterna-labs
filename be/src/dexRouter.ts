@@ -2,6 +2,9 @@ import { Quote } from './types';
 
 export class DexRouter {
     async getBestQuote(tokenPair: string, amount: number): Promise<Quote> {
+        if (tokenPair === 'FAIL/USDT') {
+            throw new Error('Simulated DEX connection failure');
+        }
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 

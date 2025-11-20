@@ -129,8 +129,24 @@ export const orderWorker = new Worker<OrderJobData>(
 
         } catch (error) {
             console.error(`[Worker] Error processing order ${orderId}:`, error);
-            await addLog(orderId, 'failed', 'Transaction failed', { error: (error as Error).message });
-            throw error;
+
+            const currentAttempt = job.attemptsMade + 1;
+            const maxAttempts = job.opts.attempts || 1;
+
+            // Log the specific error for this attempt
+            await addLog(orderId, 'pending', `Attempt ${currentAttempt} failed: ${(error as Error).message}`);
+
+            if (currentAttempt < maxAttempts) {
+                // If we have retries left, log that we are retrying and throw the error
+                // so BullMQ will schedule a retry. We keep the status as 'pending' (or whatever it was)
+                // effectively by not setting it to 'failed' yet.
+                await addLog(orderId, 'pending', `Retrying order (Attempt ${currentAttempt + 1}/${maxAttempts})...`);
+                throw error;
+            } else {
+                // No retries left, mark as failed
+                await addLog(orderId, 'failed', 'Transaction failed after max retries', { error: (error as Error).message });
+                throw error;
+            }
         }
     },
     {
