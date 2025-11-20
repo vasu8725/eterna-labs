@@ -4,6 +4,7 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import { OrderManager } from './orderManager';
 import { registerClient, broadcastOrderUpdate } from './websocket/manager';
+import { subscribeToOrderUpdates } from './redis/pubsub';
 
 const fastify = Fastify({
     logger: true
@@ -17,27 +18,9 @@ fastify.register(cors, {
 
 fastify.register(websocket);
 
-// WebSocket route for workers (internal communication)
-fastify.register(async function (fastify) {
-    fastify.get('/worker', { websocket: true }, (connection, req) => {
-        console.log('[Server] Worker connected');
-
-        connection.socket.on('message', (message) => {
-            try {
-                const data = JSON.parse(message.toString());
-                if (data.type === 'order-update') {
-                    // Broadcast order update to all clients
-                    broadcastOrderUpdate(data.order);
-                }
-            } catch (error) {
-                console.error('[Server] Error parsing worker message:', error);
-            }
-        });
-
-        connection.socket.on('close', () => {
-            console.log('[Server] Worker disconnected');
-        });
-    });
+// Subscribe to Redis pub/sub for worker updates
+subscribeToOrderUpdates((order) => {
+    broadcastOrderUpdate(order);
 });
 
 // WebSocket route for clients (frontend connections)

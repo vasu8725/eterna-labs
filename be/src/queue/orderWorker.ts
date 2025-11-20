@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import { DexRouter } from '../dexRouter';
 import { OrderJobData } from './orderQueue';
 import { OrderStatus } from '../types';
-import WebSocket from 'ws';
+import { publishOrderUpdate } from '../redis/pubsub';
 
 const prisma = new PrismaClient();
 const dexRouter = new DexRouter();
@@ -19,39 +19,9 @@ const connection = new Redis(redisUrl, {
     }
 });
 
-// WebSocket connection to main server for sending updates
-let serverWs: WebSocket | null = null;
-
-function connectToServer() {
-    serverWs = new WebSocket('ws://localhost:3000/worker');
-
-    serverWs.on('open', () => {
-        console.log('[Worker] Connected to main server');
-    });
-
-    serverWs.on('error', (error) => {
-        console.error('[Worker] WebSocket error:', error);
-    });
-
-    serverWs.on('close', () => {
-        console.log('[Worker] Disconnected from server, reconnecting in 3s...');
-        setTimeout(connectToServer, 3000);
-    });
-}
-
-// Connect to server on startup
-connectToServer();
-
-// Helper function to send order updates to main server
+// Helper function to send order updates via Redis pub/sub
 function sendOrderUpdate(order: any) {
-    if (serverWs && serverWs.readyState === WebSocket.OPEN) {
-        serverWs.send(JSON.stringify({
-            type: 'order-update',
-            order
-        }));
-    } else {
-        console.warn('[Worker] WebSocket not connected, cannot send update');
-    }
+    publishOrderUpdate(order);
 }
 
 // Helper function to add log entries
