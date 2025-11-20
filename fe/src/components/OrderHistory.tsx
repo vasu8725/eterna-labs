@@ -21,7 +21,10 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ orders }) => {
         <div style={{
             height: 'calc(100vh - 4rem)',
             overflowY: 'auto',
-            padding: '1rem',
+            paddingLeft: '1rem',
+            paddingTop: '1rem',
+            paddingBottom: '1rem',
+            paddingRight: '1rem',
             borderLeft: '1px solid #444'
         }}>
             <h2>Order History ({orders.length})</h2>

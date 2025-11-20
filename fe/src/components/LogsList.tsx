@@ -12,11 +12,13 @@ interface LogsListProps {
 }
 
 export const LogsList: React.FC<LogsListProps> = ({ logs }) => {
-    const logsEndRef = useRef<HTMLDivElement>(null);
+    const logsContainerRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to latest log
+    // Auto-scroll to latest log within the container only
     useEffect(() => {
-        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (logsContainerRef.current) {
+            logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+        }
     }, [logs]);
 
     const formatTime = (timestamp: string) => {
@@ -29,17 +31,20 @@ export const LogsList: React.FC<LogsListProps> = ({ logs }) => {
     };
 
     return (
-        <div style={{
-            marginTop: '1rem',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            backgroundColor: '#1a1a1a',
-            padding: '0.75rem',
-            borderRadius: '6px',
-            border: '1px solid #333',
-            fontFamily: 'monospace',
-            fontSize: '0.85rem'
-        }}>
+        <div
+            ref={logsContainerRef}
+            style={{
+                marginTop: '1rem',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                backgroundColor: '#1a1a1a',
+                padding: '0.75rem',
+                borderRadius: '6px',
+                border: '1px solid #333',
+                fontFamily: 'monospace',
+                fontSize: '0.85rem'
+            }}
+        >
             {logs.length === 0 ? (
                 <div style={{ color: '#888', textAlign: 'center' }}>No logs yet...</div>
             ) : (
@@ -73,7 +78,6 @@ export const LogsList: React.FC<LogsListProps> = ({ logs }) => {
                             )}
                         </div>
                     ))}
-                    <div ref={logsEndRef} />
                 </>
             )}
         </div>
