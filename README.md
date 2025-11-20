@@ -4,8 +4,8 @@ A production-ready, scalable order execution engine built with TypeScript, featu
 
 ## 🔗 Deployment Links
 
-- **Frontend**: `[TO BE DEPLOYED]`
-- **Backend API**: `[TO BE DEPLOYED]`
+- **Frontend**: [Frontend Deployment](https://eterna-labs-ten.vercel.app/)
+- **Backend API**: [Backend Deployment](https://eterna-labs-be.onrender.com)
 
 ## 🎥 Video Demo
 
