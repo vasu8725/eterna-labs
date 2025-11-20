@@ -6,8 +6,9 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "build:prod": "tsc && vite build --mode production",
         "preview": "vite preview",
-        "deploy": "npm run build && npm run preview"
+        "deploy": "npm run build:prod && npm run preview"
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.17",

@@ -3,6 +3,10 @@ import { OrderForm } from './components/OrderForm'
 import { OrderHistory } from './components/OrderHistory'
 import './index.css'
 
+// Environment variables with fallback to localhost for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+
 interface Order {
     id: string;
     tokenPair: string;
@@ -43,7 +47,7 @@ function App() {
 
     const fetchOrders = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/orders');
+            const response = await fetch(`${API_URL}/api/orders`);
             const data = await response.json();
             setOrders(data);
         } catch (error) {
@@ -52,7 +56,7 @@ function App() {
     };
 
     const connectWebSocket = () => {
-        const ws = new WebSocket('ws://localhost:3000/');
+        const ws = new WebSocket(`${WS_URL}/`);
         wsRef.current = ws;
 
         ws.onopen = () => {
@@ -94,7 +98,7 @@ function App() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3000/api/orders/execute', {
+            const response = await fetch(`${API_URL}/api/orders/execute`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
