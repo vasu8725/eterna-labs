@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/be/src/index.js",
-    "start:worker": "node dist/be/src/worker.js",
+    "start:worker": "node dist/worker.js",
     "dev": "nodemon src/index.ts",
     "worker": "nodemon src/worker.ts",
     "build": "tsc",
