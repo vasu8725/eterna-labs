@@ -1,0 +1,26 @@
+{
+  "name": "order-execution-engine-be",
+  "version": "1.0.0",
+  "description": "Backend for Order Execution Engine",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "fastify": "^4.26.1",
+    "@fastify/websocket": "^9.0.0",
+    "@fastify/cors": "^9.0.1",
+    "@prisma/client": "^5.10.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/ws": "^8.5.10",
+    "nodemon": "^3.0.3",
+    "prisma": "^5.10.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
