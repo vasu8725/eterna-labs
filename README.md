@@ -7,6 +7,20 @@ A production-ready, scalable order execution engine built with TypeScript, featu
 - **Frontend**: `[TO BE DEPLOYED]`
 - **Backend API**: `[TO BE DEPLOYED]`
 
+## 🎥 Video Demo
+
+**Watch the full demonstration:**
+
+`[video demo link here - YouTube, Loom, or direct video file]`
+
+### Demo Highlights:
+- Order submission and execution flow
+- Real-time log streaming
+- DEX price comparison (Raydium vs Meteora)
+- Retry mechanism in action
+- WebSocket real-time updates
+- Complete order lifecycle (Pending → Confirmed)
+
 ---
 
 ## 📋 Table of Contents
