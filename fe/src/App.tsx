@@ -1,31 +1,97 @@
 import { useState, useEffect, useRef } from 'react'
 import { OrderForm } from './components/OrderForm'
-import { StatusLog } from './components/StatusLog'
+import { OrderHistory } from './components/OrderHistory'
 import './index.css'
 
 interface Order {
     id: string;
+    tokenPair: string;
+    amount: number;
     status: string;
-    bestQuote?: {
-        dex: string;
-        price: number;
-    };
-    txHash?: string;
+    createdAt: string;
+    updatedAt: string;
+    txHash?: string | null;
+    bestQuote?: any;
+    logs?: LogEntry[];
+}
+
+interface LogEntry {
+    timestamp: string;
+    status: string;
+    message: string;
+    details?: any;
 }
 
 function App() {
-    const [logs, setLogs] = useState<string[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const wsRef = useRef<WebSocket | null>(null);
 
-    const addLog = (message: string) => {
-        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+    useEffect(() => {
+        // Fetch all orders on mount
+        fetchOrders();
+
+        // Connect to WebSocket for real-time updates
+        connectWebSocket();
+
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+        };
+    }, []);
+
+    const fetchOrders = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/orders');
+            const data = await response.json();
+            setOrders(data);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
+
+    const connectWebSocket = () => {
+        const ws = new WebSocket('ws://localhost:3000/');
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket for order updates');
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === 'order-update') {
+                const updatedOrder = message.data;
+
+                setOrders(prevOrders => {
+                    const existingIndex = prevOrders.findIndex(o => o.id === updatedOrder.id);
+                    if (existingIndex >= 0) {
+                        // Update existing order
+                        const newOrders = [...prevOrders];
+                        newOrders[existingIndex] = updatedOrder;
+                        return newOrders;
+                    } else {
+                        // Add new order at the beginning
+                        return [updatedOrder, ...prevOrders];
+                    }
+                });
+            }
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+            // Reconnect after 3 seconds
+            setTimeout(connectWebSocket, 3000);
+        };
     };
 
     const handleOrderSubmit = async (tokenPair: string, amount: number) => {
         setIsLoading(true);
-        setLogs([]);
-        addLog(`Submitting order: ${tokenPair} Amount: ${amount}`);
 
         try {
             const response = await fetch('http://localhost:3000/api/orders/execute', {
@@ -41,65 +107,28 @@ function App() {
             }
 
             const order: Order = await response.json();
-            addLog(`Order created. ID: ${order.id}`);
-            addLog(`Status: ${order.status}`);
+            console.log('Order created:', order.id);
 
-            // Connect to WebSocket
-            connectWebSocket(order.id);
+            // Order will be added to list via WebSocket update
+            setIsLoading(false);
 
         } catch (error) {
-            addLog(`Error: ${(error as Error).message}`);
+            console.error('Error:', error);
             setIsLoading(false);
+            alert('Failed to submit order. Please try again.');
         }
-    };
-
-    const connectWebSocket = (orderId: string) => {
-        if (wsRef.current) {
-            wsRef.current.close();
-        }
-
-        const ws = new WebSocket(`ws://localhost:3000?orderId=${orderId}`);
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-            addLog('Connected to WebSocket updates');
-        };
-
-        ws.onmessage = (event) => {
-            const order: Order = JSON.parse(event.data);
-            let message = `Status update: ${order.status}`;
-
-            if (order.status === 'routing' && order.bestQuote) {
-                message += ` | Best Quote: ${order.bestQuote.dex} @ ${order.bestQuote.price.toFixed(2)}`;
-            }
-
-            if (order.status === 'confirmed' && order.txHash) {
-                message += ` | TxHash: ${order.txHash}`;
-                setIsLoading(false);
-            }
-
-            if (order.status === 'failed') {
-                setIsLoading(false);
-            }
-
-            addLog(message);
-        };
-
-        ws.onerror = () => {
-            addLog('WebSocket error');
-            setIsLoading(false);
-        };
-
-        ws.onclose = () => {
-            addLog('WebSocket connection closed');
-        };
     };
 
     return (
-        <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-            <h1>Order Execution Engine</h1>
-            <OrderForm onSubmit={handleOrderSubmit} isLoading={isLoading} />
-            <StatusLog logs={logs} />
+        <div style={{ display: 'flex', width: '100%', height: '100vh' }}>
+            <div style={{ width: '50%', padding: '2rem' }}>
+                <h1>Order Execution Engine</h1>
+                <p style={{ color: '#888' }}>Submit orders and watch them process in real-time</p>
+                <OrderForm onSubmit={handleOrderSubmit} isLoading={isLoading} />
+            </div>
+            <div style={{ width: '50%' }}>
+                <OrderHistory orders={orders} />
+            </div>
         </div>
     )
 }

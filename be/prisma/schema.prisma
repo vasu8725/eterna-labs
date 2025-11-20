@@ -16,4 +16,5 @@ model Order {
   updatedAt DateTime @updatedAt
   txHash    String?
   bestQuote Json?
+  logs      Json     @default("[]")
 }

@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import { OrderManager } from './orderManager';
+import { registerClient } from './websocket/manager';
 
 const fastify = Fastify({
     logger: true
@@ -18,14 +19,12 @@ fastify.register(websocket);
 fastify.register(async function (fastify) {
     fastify.get('/', { websocket: true }, (connection, req) => {
         const query = req.query as { orderId?: string };
-        const orderId = query.orderId;
+        const orderId = query.orderId || null;
 
-        if (orderId) {
-            orderManager.registerClient(orderId, connection.socket);
-        }
+        registerClient(orderId, connection.socket);
 
         connection.socket.on('close', () => {
-            // Cleanup
+            // Cleanup handled in registerClient
         });
     });
 });
@@ -39,6 +38,11 @@ fastify.post('/api/orders/execute', async (request, reply) => {
 
     const order = await orderManager.createOrder(tokenPair, Number(amount));
     return order;
+});
+
+fastify.get('/api/orders', async (request, reply) => {
+    const orders = await orderManager.getAllOrders();
+    return orders;
 });
 
 const start = async () => {

@@ -13,15 +13,21 @@ export interface Quote {
     fee: number;
 }
 
-// We can use the Prisma generated type for Order, but for now let's define a compatible interface
-// to avoid circular dependency issues before generation is complete.
+export interface LogEntry {
+    timestamp: string;
+    status: OrderStatus;
+    message: string;
+    details?: any;
+}
+
 export interface Order {
     id: string;
     tokenPair: string;
     amount: number;
-    status: string; // Prisma uses string
+    status: string;
     createdAt: Date;
     updatedAt: Date;
     txHash: string | null;
-    bestQuote: any; // Json in Prisma
+    bestQuote: any;
+    logs: LogEntry[];
 }
