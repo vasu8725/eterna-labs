@@ -26,11 +26,13 @@ const CHANNEL_NAME = 'order-updates';
  */
 export async function publishOrderUpdate(order: any): Promise<void> {
     try {
-        await publisher.publish(CHANNEL_NAME, JSON.stringify({
+        const message = {
             type: 'order-update',
             order
-        }));
-        console.log(`[PubSub] Published update for order ${order.id}`);
+        };
+        await publisher.publish(CHANNEL_NAME, JSON.stringify(message));
+        console.log(`[PubSub] Published update for order ${order.id}, status: ${order.status}, logs count: ${order.logs?.length || 0}`)
+        console.log(`[PubSub] Order data:`, JSON.stringify(order, null, 2));
     } catch (error) {
         console.error('[PubSub] Error publishing order update:', error);
     }
@@ -53,7 +55,9 @@ export function subscribeToOrderUpdates(callback: (order: any) => void): void {
         if (channel === CHANNEL_NAME) {
             try {
                 const data = JSON.parse(message);
+                console.log(`[PubSub] Received message from ${channel}:`, data.type);
                 if (data.type === 'order-update') {
+                    console.log(`[PubSub] Order update received for ${data.order.id}, status: ${data.order.status}, logs: ${data.order.logs?.length || 0}`);
                     callback(data.order);
                 }
             } catch (error) {

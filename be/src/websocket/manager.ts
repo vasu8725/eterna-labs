@@ -26,6 +26,8 @@ export function registerClient(orderId: string | null, ws: WebSocket) {
 }
 
 export function broadcastOrderUpdate(order: any) {
+    console.log(`[WebSocket] Broadcasting order ${order.id} to ${globalClients.size} clients, logs count: ${order.logs?.length || 0}`);
+
     // Send to clients listening to this specific order
     const orderClients = clients.get(order.id);
     if (orderClients) {
@@ -39,7 +41,9 @@ export function broadcastOrderUpdate(order: any) {
     // Also broadcast to all global clients for order list updates
     globalClients.forEach(ws => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'order-update', data: order }));
+            const message = JSON.stringify({ type: 'order-update', data: order });
+            ws.send(message);
+            console.log(`[WebSocket] Sent order ${order.id} update to client`);
         }
     });
 }

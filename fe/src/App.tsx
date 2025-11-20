@@ -60,13 +60,18 @@ function App() {
         wsRef.current = ws;
 
         ws.onopen = () => {
-            console.log('Connected to WebSocket for order updates');
+            console.log('[Frontend] Connected to WebSocket for order updates');
         };
 
         ws.onmessage = (event) => {
+            console.log('[Frontend] WebSocket message received:', event.data);
             const message = JSON.parse(event.data);
+            console.log('[Frontend] Parsed message:', message);
+
             if (message.type === 'order-update') {
                 const updatedOrder = message.data;
+                console.log(`[Frontend] Order update: ${updatedOrder.id}, status: ${updatedOrder.status}, logs: ${updatedOrder.logs?.length || 0}`);
+                console.log('[Frontend] Order logs:', updatedOrder.logs);
 
                 setOrders(prevOrders => {
                     const existingIndex = prevOrders.findIndex(o => o.id === updatedOrder.id);
@@ -84,11 +89,11 @@ function App() {
         };
 
         ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
+            console.error('[Frontend] WebSocket error:', error);
         };
 
         ws.onclose = () => {
-            console.log('WebSocket connection closed');
+            console.log('[Frontend] WebSocket connection closed');
             // Reconnect after 3 seconds
             setTimeout(connectWebSocket, 3000);
         };
