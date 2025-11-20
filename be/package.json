@@ -5,10 +5,13 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
+    "start:worker": "node dist/worker.js",
     "dev": "nodemon src/index.ts",
     "worker": "nodemon src/worker.ts",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "deploy:server": "npm run build && npm start",
+    "deploy:worker": "npm run build && npm run start:worker"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
