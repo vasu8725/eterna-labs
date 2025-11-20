@@ -16,11 +16,12 @@
     "bullmq": "^5.63.2",
     "dotenv": "^16.4.5",
     "fastify": "^4.26.1",
-    "ioredis": "^5.8.2"
+    "ioredis": "^5.8.2",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.0.3",
     "prisma": "^5.10.2",
     "ts-node": "^10.9.2",

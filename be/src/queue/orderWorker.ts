@@ -1,20 +1,58 @@
+import 'dotenv/config';
 import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { PrismaClient } from '@prisma/client';
 import { DexRouter } from '../dexRouter';
 import { OrderJobData } from './orderQueue';
-import { broadcastOrderUpdate } from '../websocket/manager';
 import { OrderStatus } from '../types';
+import WebSocket from 'ws';
 
 const prisma = new PrismaClient();
 const dexRouter = new DexRouter();
 
-const connection = new Redis(process.env.REDIS_URL!, {
+const redisUrl = process.env.REDIS_URL || '';
+
+const connection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
     tls: {
         rejectUnauthorized: false
     }
 });
+
+// WebSocket connection to main server for sending updates
+let serverWs: WebSocket | null = null;
+
+function connectToServer() {
+    serverWs = new WebSocket('ws://localhost:3000/worker');
+
+    serverWs.on('open', () => {
+        console.log('[Worker] Connected to main server');
+    });
+
+    serverWs.on('error', (error) => {
+        console.error('[Worker] WebSocket error:', error);
+    });
+
+    serverWs.on('close', () => {
+        console.log('[Worker] Disconnected from server, reconnecting in 3s...');
+        setTimeout(connectToServer, 3000);
+    });
+}
+
+// Connect to server on startup
+connectToServer();
+
+// Helper function to send order updates to main server
+function sendOrderUpdate(order: any) {
+    if (serverWs && serverWs.readyState === WebSocket.OPEN) {
+        serverWs.send(JSON.stringify({
+            type: 'order-update',
+            order
+        }));
+    } else {
+        console.warn('[Worker] WebSocket not connected, cannot send update');
+    }
+}
 
 // Helper function to add log entries
 async function addLog(orderId: string, status: OrderStatus, message: string, details?: any) {
@@ -38,7 +76,8 @@ async function addLog(orderId: string, status: OrderStatus, message: string, det
         }
     });
 
-    broadcastOrderUpdate(updatedOrder);
+    // Send update to main server via WebSocket
+    sendOrderUpdate(updatedOrder);
     console.log(`[Worker] ${orderId}: ${message}`);
 }
 
