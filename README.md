@@ -11,7 +11,7 @@ A production-ready, scalable order execution engine built with TypeScript, featu
 
 **Watch the full demonstration:**
 
-`[video demo link here - YouTube, Loom, or direct video file]`
+[YOUTUBE DEMO](https://youtu.be/mRMmz7l-TOQ)
 
 ### Demo Highlights:
 - Order submission and execution flow
