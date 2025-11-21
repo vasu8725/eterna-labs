@@ -1,0 +1,26 @@
+{
+	"info": {
+		"_postman_id": "a4832f08-d4f8-4754-9452-107830920ea0",
+		"name": "eterna-labs-http",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33300689"
+	},
+	"item": [
+		{
+			"name": "Submit an order",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get all the orders",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
