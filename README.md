@@ -4,8 +4,8 @@ A production-ready, scalable order execution engine built with TypeScript, featu
 
 ## 🔗 Deployment Links
 
-- **Frontend**: [Frontend Deployment](https://eterna-labs-ten.vercel.app/)
-- **Backend API**: [Backend Deployment](https://eterna-labs-be.onrender.com)
+- **Frontend (Deployed on Vercel)**: [Frontend Deployment](https://eterna-labs-ten.vercel.app/)
+- **Backend API (Deployed on Render)**: [Backend Deployment](https://eterna-labs-be.onrender.com)
 
 ## 🎥 Video Demo
 
@@ -29,11 +29,12 @@ A production-ready, scalable order execution engine built with TypeScript, featu
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
-- [Backend Internals](#backend-internals)
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
 - [Setup & Installation](#setup--installation)
 - [Environment Variables](#environment-variables)
+- [Project Structure](#project-structure)
+- [Performance Characteristics](#performance-characteristics)
 
 ---
 
@@ -71,46 +72,7 @@ The Order Execution Engine is a comprehensive system that simulates token tradin
 
 ### System Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                          Frontend (React)                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ Order Form   │  │ Order History│  │ Real-time Logs       │  │
-│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ HTTP/WebSocket
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Backend Server (Fastify)                      │
-│                                                                  │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐  │
-│  │ REST API         │  │ WebSocket Server │  │ Redis PubSub │  │
-│  │ - /api/orders/*  │  │ - Client Mgmt    │  │ - Subscriber │  │
-│  └──────────────────┘  └──────────────────┘  └──────────────┘  │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │              Order Manager (Business Logic)              │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└────────────┬──────────────────────────┬────────────────┬────────┘
-             │                          │                │
-             ▼                          ▼                ▼
-  ┌──────────────────┐      ┌──────────────────┐   ┌─────────────┐
-  │   PostgreSQL     │      │  Redis (Queue)   │   │ Redis PubSub│
-  │   (Prisma ORM)   │      │    (BullMQ)      │   │  (Messaging)│
-  └──────────────────┘      └──────────────────┘   └─────────────┘
-                                     │
-                                     ▼
-                          ┌──────────────────────┐
-                          │   Worker Process     │
-                          │                      │
-                          │  ┌───────────────┐   │
-                          │  │ Order Worker  │   │
-                          │  │ - DEX Router  │   │
-                          │  │ - Retry Logic │   │
-                          │  │ - Publisher   │   │
-                          │  └───────────────┘   │
-                          └──────────────────────┘
-```
+<img width="1743" height="787" alt="eterna-labs-architechture" src="https://github.com/user-attachments/assets/76a85a75-0cd9-4048-9472-f600270dd814" />
 
 ### Communication Flow
 
@@ -203,40 +165,6 @@ The Order Execution Engine is a comprehensive system that simulates token tradin
 - Responsive design
 
 ---
-
-## 🔧 Backend Internals
-
-### Core Components
-
-#### 1. **Order Manager** (`src/orderManager.ts`)
-- Creates and manages orders in PostgreSQL
-- Generates unique order IDs
-- Enqueues jobs to BullMQ
-- Retrieves order history
-
-#### 2. **DEX Router** (`src/dexRouter.ts`)
-- Simulates price fetching from DEXs
-- Compares Raydium vs Meteora quotes
-- Returns best price based on comparison logic
-
-#### 3. **Order Worker** (`src/queue/orderWorker.ts`)
-- Processes jobs from BullMQ queue
-- Executes order lifecycle (7 stages)
-- Implements retry logic (3 attempts)
-- Publishes updates via Redis Pub/Sub
-- Logs detailed execution information
-
-#### 4. **Redis Pub/Sub Service** (`src/redis/pubsub.ts`)
-- Publisher instance for workers
-- Subscriber instance for server
-- Channel: `order-updates`
-- Handles message serialization/deserialization
-
-#### 5. **WebSocket Manager** (`src/websocket/manager.ts`)
-- Manages client connections
-- Order-specific subscriptions
-- Global broadcast capability
-- Automatic cleanup on disconnect
 
 ### Database Schema (Prisma)
 
@@ -492,36 +420,6 @@ eterna-labs/
 
 ---
 
-## 🎯 Key Implementation Highlights
-
-### 1. **Scalable Worker Architecture**
-- Workers are fully decoupled from the server
-- Horizontal scaling ready (add more worker processes)
-- No direct worker-to-server connections (uses Redis Pub/Sub)
-
-### 2. **Retry Logic with Visibility**
-- Transparent retry attempts visible in logs
-- User sees: "Attempt 1 failed" → "Retrying..." → "Attempt 2 failed"
-- Only marks as failed after 3 attempts
-
-### 3. **Real-time Updates**
-- Sub-second latency for log updates
-- WebSocket connection per client
-- Efficient broadcast using Redis Pub/Sub
-
-### 4. **Type Safety**
-- End-to-end TypeScript
-- Prisma for type-safe database queries
-- Full IntelliSense support
-
-### 5. **Production-Ready**
-- Error handling at all layers
-- Logging for debugging
-- Clean separation of concerns
-- Comprehensive testing
-
----
-
 ## 📊 Performance Characteristics
 
 - **Concurrent Orders**: 3 simultaneous workers
@@ -529,35 +427,3 @@ eterna-labs/
 - **Queue Throughput**: ~100 jobs/minute per worker
 - **WebSocket Latency**: <100ms for updates
 - **Database**: Indexed queries on order ID
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Real Solana blockchain integration
-- [ ] Authentication & user management
-- [ ] Order cancellation
-- [ ] Advanced analytics dashboard
-- [ ] Rate limiting
-- [ ] CI/CD pipeline
-- [ ] Docker containerization
-
----
-
-## 📝 License
-
-MIT License
-
----
-
-## 👨‍💻 Developer Notes
-
-This project demonstrates:
-- Modern TypeScript development
-- Microservices communication patterns
-- Real-time data streaming
-- Queue-based job processing
-- Test-driven development
-- Clean architecture principles
-
-Built with ❤️ for production-grade order execution.
